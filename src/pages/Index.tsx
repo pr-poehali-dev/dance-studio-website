@@ -4,10 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import Icon from '@/components/ui/icon';
 
 const Index = () => {
   const [formData, setFormData] = useState({ name: '', phone: '', message: '' });
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,7 +19,17 @@ const Index = () => {
 
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    setMobileMenuOpen(false);
   };
+
+  const menuItems = [
+    { id: 'about', label: 'О студии' },
+    { id: 'directions', label: 'Направления' },
+    { id: 'schedule', label: 'Расписание' },
+    { id: 'teachers', label: 'Преподаватели' },
+    { id: 'gallery', label: 'Галерея' },
+    { id: 'contact', label: 'Контакты' },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -25,22 +37,40 @@ const Index = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-primary">Студия танца</h1>
+            
             <div className="hidden md:flex gap-6">
-              {['about', 'directions', 'schedule', 'teachers', 'gallery', 'contact'].map((section) => (
+              {menuItems.map((item) => (
                 <button
-                  key={section}
-                  onClick={() => scrollToSection(section)}
+                  key={item.id}
+                  onClick={() => scrollToSection(item.id)}
                   className="text-sm font-medium hover:text-primary transition-colors"
                 >
-                  {section === 'about' && 'О студии'}
-                  {section === 'directions' && 'Направления'}
-                  {section === 'schedule' && 'Расписание'}
-                  {section === 'teachers' && 'Преподаватели'}
-                  {section === 'gallery' && 'Галерея'}
-                  {section === 'contact' && 'Контакты'}
+                  {item.label}
                 </button>
               ))}
             </div>
+
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild className="md:hidden">
+                <Button variant="ghost" size="icon">
+                  <Icon name="Menu" size={24} />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[280px]">
+                <div className="flex flex-col gap-6 mt-8">
+                  <h2 className="text-xl font-bold text-primary mb-4">Меню</h2>
+                  {menuItems.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => scrollToSection(item.id)}
+                      className="text-left text-lg font-medium hover:text-primary transition-colors py-2 border-b border-border"
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </nav>

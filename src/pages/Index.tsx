@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,8 @@ import Icon from '@/components/ui/icon';
 const Index = () => {
   const [formData, setFormData] = useState({ name: '', phone: '', message: '' });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set());
+  const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,6 +32,29 @@ const Index = () => {
     { id: 'gallery', label: 'Галерея' },
     { id: 'contact', label: 'Контакты' },
   ];
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setVisibleSections((prev) => new Set(prev).add(entry.target.id));
+          }
+        });
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    Object.values(sectionRefs.current).forEach((section) => {
+      if (section) observer.observe(section);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const setSectionRef = (id: string) => (el: HTMLElement | null) => {
+    sectionRefs.current[id] = el;
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -89,11 +114,17 @@ const Index = () => {
         </div>
       </section>
 
-      <section id="about" className="py-20 px-4">
+      <section 
+        id="about" 
+        ref={setSectionRef('about')}
+        className={`py-20 px-4 transition-all duration-700 ${
+          visibleSections.has('about') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}
+      >
         <div className="container mx-auto">
-          <h3 className="text-4xl font-bold text-center mb-12 animate-fade-in">О студии</h3>
+          <h3 className="text-4xl font-bold text-center mb-12">О студии</h3>
           <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="animate-fade-in">
+            <div>
               <p className="text-lg text-muted-foreground mb-6">
                 Наша студия танца — это пространство, где каждый ребёнок и подросток может раскрыть свой потенциал. Мы создали атмосферу поддержки, где танец становится способом самовыражения и уверенности в себе.
               </p>
@@ -115,23 +146,29 @@ const Index = () => {
                 </div>
               </div>
             </div>
-            <div className="bg-muted rounded-2xl h-96 flex items-center justify-center animate-scale-in">
+            <div className="bg-muted rounded-2xl h-96 flex items-center justify-center">
               <Icon name="Music" size={80} className="text-primary/30" />
             </div>
           </div>
         </div>
       </section>
 
-      <section id="directions" className="py-20 px-4 bg-muted/30">
+      <section 
+        id="directions" 
+        ref={setSectionRef('directions')}
+        className={`py-20 px-4 bg-muted/30 transition-all duration-700 ${
+          visibleSections.has('directions') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}
+      >
         <div className="container mx-auto">
-          <h3 className="text-4xl font-bold text-center mb-12 animate-fade-in">Направления</h3>
+          <h3 className="text-4xl font-bold text-center mb-12">Направления</h3>
           <div className="grid md:grid-cols-3 gap-8">
             {[
               { icon: 'Sparkles', title: 'Классический танец', desc: 'Основа для всех направлений. Развиваем осанку, координацию и грацию.' },
               { icon: 'Zap', title: 'Современные танцы', desc: 'Hip-hop, jazz-funk, contemporary — современные стили для самовыражения.' },
               { icon: 'Heart', title: 'Бальные танцы', desc: 'Вальс, танго, ча-ча-ча — элегантность и работа в паре.' },
             ].map((direction, index) => (
-              <Card key={index} className="hover-lift animate-fade-in border-none shadow-lg" style={{ animationDelay: `${index * 0.1}s` }}>
+              <Card key={index} className="hover-lift border-none shadow-lg">
                 <CardHeader>
                   <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                     <Icon name={direction.icon} size={32} className="text-primary" />
@@ -147,9 +184,15 @@ const Index = () => {
         </div>
       </section>
 
-      <section id="schedule" className="py-20 px-4">
+      <section 
+        id="schedule" 
+        ref={setSectionRef('schedule')}
+        className={`py-20 px-4 transition-all duration-700 ${
+          visibleSections.has('schedule') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}
+      >
         <div className="container mx-auto max-w-4xl">
-          <h3 className="text-4xl font-bold text-center mb-12 animate-fade-in">Расписание</h3>
+          <h3 className="text-4xl font-bold text-center mb-12">Расписание</h3>
           <div className="space-y-4">
             {[
               { day: 'Понедельник', time: '16:00 - 17:30', group: 'Классический танец (7-10 лет)' },
@@ -159,7 +202,7 @@ const Index = () => {
               { day: 'Пятница', time: '16:00 - 17:30', group: 'Классический танец (11-14 лет)' },
               { day: 'Пятница', time: '18:00 - 19:30', group: 'Jazz-funk (14-17 лет)' },
             ].map((item, index) => (
-              <Card key={index} className="animate-fade-in hover-lift" style={{ animationDelay: `${index * 0.05}s` }}>
+              <Card key={index} className="hover-lift">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <div className="flex items-center gap-4">
                     <Icon name="Calendar" className="text-primary" size={24} />
@@ -178,16 +221,22 @@ const Index = () => {
         </div>
       </section>
 
-      <section id="teachers" className="py-20 px-4 bg-muted/30">
+      <section 
+        id="teachers" 
+        ref={setSectionRef('teachers')}
+        className={`py-20 px-4 bg-muted/30 transition-all duration-700 ${
+          visibleSections.has('teachers') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}
+      >
         <div className="container mx-auto">
-          <h3 className="text-4xl font-bold text-center mb-12 animate-fade-in">Преподаватели</h3>
+          <h3 className="text-4xl font-bold text-center mb-12">Преподаватели</h3>
           <div className="grid md:grid-cols-3 gap-8">
             {[
               { name: 'Анна Смирнова', role: 'Классический танец', exp: '15 лет опыта' },
               { name: 'Дмитрий Волков', role: 'Современные танцы', exp: '10 лет опыта' },
               { name: 'Елена Петрова', role: 'Бальные танцы', exp: '12 лет опыта' },
             ].map((teacher, index) => (
-              <Card key={index} className="text-center hover-lift animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+              <Card key={index} className="text-center hover-lift">
                 <CardHeader>
                   <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary to-secondary mx-auto mb-4 flex items-center justify-center">
                     <Icon name="User" size={64} className="text-white" />
@@ -204,9 +253,15 @@ const Index = () => {
         </div>
       </section>
 
-      <section id="gallery" className="py-20 px-4">
+      <section 
+        id="gallery" 
+        ref={setSectionRef('gallery')}
+        className={`py-20 px-4 transition-all duration-700 ${
+          visibleSections.has('gallery') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}
+      >
         <div className="container mx-auto">
-          <h3 className="text-4xl font-bold text-center mb-12 animate-fade-in">Галерея</h3>
+          <h3 className="text-4xl font-bold text-center mb-12">Галерея</h3>
           <div className="grid md:grid-cols-3 gap-6">
             {[
               'https://cdn.poehali.dev/projects/3f683e6a-410b-43b6-8579-324579363b06/files/119243bd-8cc2-47ba-a754-ccf80faf3003.jpg',
@@ -215,8 +270,7 @@ const Index = () => {
             ].map((img, index) => (
               <div
                 key={index}
-                className="aspect-square rounded-2xl hover-lift animate-fade-in overflow-hidden"
-                style={{ animationDelay: `${index * 0.1}s` }}
+                className="aspect-square rounded-2xl hover-lift overflow-hidden"
               >
                 <img src={img} alt={`Галерея ${index + 1}`} className="w-full h-full object-cover" />
               </div>
@@ -224,8 +278,7 @@ const Index = () => {
             {[1, 2, 3].map((item, index) => (
               <div
                 key={`placeholder-${item}`}
-                className="aspect-square bg-gradient-to-br from-muted to-accent/20 rounded-2xl hover-lift animate-fade-in flex items-center justify-center"
-                style={{ animationDelay: `${(index + 3) * 0.1}s` }}
+                className="aspect-square bg-gradient-to-br from-muted to-accent/20 rounded-2xl hover-lift flex items-center justify-center"
               >
                 <Icon name="Image" size={48} className="text-muted-foreground/30" />
               </div>
@@ -234,9 +287,15 @@ const Index = () => {
         </div>
       </section>
 
-      <section id="faq" className="py-20 px-4 bg-muted/30">
+      <section 
+        id="faq" 
+        ref={setSectionRef('faq')}
+        className={`py-20 px-4 bg-muted/30 transition-all duration-700 ${
+          visibleSections.has('faq') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}
+      >
         <div className="container mx-auto max-w-3xl">
-          <h3 className="text-4xl font-bold text-center mb-12 animate-fade-in">Часто задаваемые вопросы</h3>
+          <h3 className="text-4xl font-bold text-center mb-12">Часто задаваемые вопросы</h3>
           <Accordion type="single" collapsible className="space-y-4">
             {[
               {
@@ -269,10 +328,16 @@ const Index = () => {
         </div>
       </section>
 
-      <section id="contact" className="py-20 px-4">
+      <section 
+        id="contact" 
+        ref={setSectionRef('contact')}
+        className={`py-20 px-4 transition-all duration-700 ${
+          visibleSections.has('contact') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}
+      >
         <div className="container mx-auto max-w-2xl">
-          <h3 className="text-4xl font-bold text-center mb-12 animate-fade-in">Контакты</h3>
-          <Card className="shadow-2xl animate-scale-in">
+          <h3 className="text-4xl font-bold text-center mb-12">Контакты</h3>
+          <Card className="shadow-2xl">
             <CardHeader>
               <CardTitle className="text-2xl">Запишитесь на пробное занятие</CardTitle>
               <CardDescription>Заполните форму, и мы свяжемся с вами в течение дня</CardDescription>
